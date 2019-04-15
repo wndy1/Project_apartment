@@ -1,0 +1,32 @@
+### 동별 초등학교 수 계산
+# working directory 설정
+getwd()
+setwd("C:/Users/wndy4/Desktop/Project_DEMA/정동호/인천초중고")
+
+# 데이터 가져오기
+ele  = read.csv('./인천광역시초등학교현황.csv',header=T,stringsAsFactors=F)
+# View(ele)
+
+str(ele)
+
+dim(ele)
+
+# 구별 동 벡터 생성 함수
+dong_list=function(gu_name){
+  setwd("C:/Users/wndy4/Desktop/Project_DEMA/정동호")
+  Gu = read.csv(file = paste("./인천광역시",gu_name,"인구수.csv",sep=''),header=T,stringsAsFactors=F)
+  Row = nrow(Gu)
+  Res = Gu[1:Row-1,"행정구역"]
+  return(Res)
+}
+dong = dong_list("계양구")
+dong_mat = matrix(0,nrow = length(dong),ncol=1)
+colnames(dong_mat) = "개수"
+rownames(dong_mat) = dong
+dong_mat
+for(i in 1:length(dong)){
+  dong_mat[i,1] = length(grep(dong[i],ele$주소))
+}
+dat2 = dong_mat
+dat2
+margin.table(dat2,2)

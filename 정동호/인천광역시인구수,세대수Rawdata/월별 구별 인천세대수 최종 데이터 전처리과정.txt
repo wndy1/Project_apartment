@@ -1,0 +1,25 @@
+## 각 구별의 데이터를 하나의 데이터로 만들기
+getwd()
+setwd('C:/Users/wndy4/Desktop/데이터마이닝 팀플/변수/월별인천인구수/인천광역시 세대수')
+# 각 csv 파일을 읽어와서 해당 구의 데이터는 구의 이름을 갖는 새로운 열을 삽입하고
+# 행결합을 한다.
+#i = c("중구")
+#paste0("인천광역시",i,".csv",sep="")
+?paste
+gu_name = c("계양구","남동구","동구","미추홀구",
+            "부평구","서구","연수구","옹진군","중구")
+
+dat1 = read.csv("인천광역시강화군세대수.csv",header=T)
+dat1 = cbind("구 이름" = "강화군",dat1)
+for(i in gu_name){
+  dat = read.csv(file = paste("인천광역시",i,"세대수.csv",sep=""),header=T)
+  dat = cbind("구 이름" = i,dat)
+  dat1 = rbind(dat1,dat) 
+}
+View(dat1)
+which(is.na(dat1))
+# 행 이름 수정
+colnames(dat1) = gsub("X","",colnames(dat1))
+str(dat1)
+# 통합 파일 csv로 내보내기
+write.csv(dat1,file = "인천광역시 월별 구별 세대수.csv")
