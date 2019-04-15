@@ -7,7 +7,7 @@ import xlrd
 from xlrd import XLRDError
 
 
-# 2016년 ~ 2019년 월별 인천 구별 인구수 함수
+# 2016년 ~ 2019년 월별 인천 구별 수 함수
 
 def Nogu(gu_name):
     # 초기값 설정 2016년 1월
