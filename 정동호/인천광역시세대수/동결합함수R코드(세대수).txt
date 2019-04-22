@@ -1,0 +1,30 @@
+# 1동, 2동 등 결합하는 함수
+# 세대수의 경우
+dong_merge=function(gu_name){
+  setwd('C:/Users/wndy4/Desktop/Project_DEMA/정동호/인천광역시세대수') # working directory 설정
+  # csv 파일 불러오기
+  Gu = read.csv(paste('인천광역시',gu_name,'세대수.csv',sep=''),header=T,stringsAsFactors=F)
+  # 행정구역의 숫자제거
+  Gu$행정구역=gsub("\\d",'',Gu$행정구역)
+  # Gu 파일의 행, 열 개수 
+  Gu_dim = dim(Gu)
+  # 행정구역 중복제거 
+  Gu_list = unique(Gu$행정구역)
+  # 새로운 행을 생성하는 j
+  j = Gu_dim[1]+1
+  # 중복 행, 행 간 결합
+  for (i in Gu_list) {
+    a = apply(Gu[Gu$행정구역==i,2:37],2,sum)
+    Gu[j,2:37]=a
+    Gu[j,1] = i
+    j=j+1
+  }
+  # 필요없는 행 제거
+  Gu = Gu[-1:-Gu_dim[1],]
+  # 행의 X2016.01에서 X 제거
+  colnames(Gu) = gsub("X","",colnames(Gu))
+  # csv 파일 내보내기
+  write.csv(Gu,file=paste('인천광역시',gu_name,'세대수(new).csv',sep=''))
+}
+
+dong_merge('중구')
