@@ -1,0 +1,101 @@
+### 인천광역시 월별 구별 아파트 매매가격 변동(new) EDA ###
+## 시계열 자료
+rm(list=ls())
+## set working directory
+setwd('C:/Users/wndy4/Desktop/Project_DEMA/정동호')
+
+## Load csv file
+dat = read.csv('인천광역시동별아파트매매가격변동(월단위)new2.csv',header=T,stringsAsFactors=F)
+View(dat)
+## 열명 수정
+colnames(dat) = gsub('X','',colnames(dat))
+colnames(dat)
+## 기초정보
+dim(dat)
+str(dat)
+## 각 구별 월별로 인구 수 변화
+# 구군 이름
+gu_name = unique(dat$구군)
+gu_name
+## 각 구별 합계 행 위치 찾기
+gu_sumrow = c()
+for (i in 1:length(gu_name)){
+  gu_sumrow[i] = which(dat$구군==gu_name[i] & dat$지역=="전체")
+}
+gu_sumrow
+
+## 구군별 합계 시계열 데이터 매트릭스
+# data에 transpose 하는 이유는 plot 에서 행 벡터 인식 X 열 벡터 인식 O
+gu_dat = t(dat[gu_sumrow,3:38])
+incheon_mean = ceiling(apply(gu_dat, 1,mean))
+gu_dat = cbind(gu_dat,incheon_mean)
+ts_gu_mat = ts(data = gu_dat,start = c(2016),frequency = 36)
+View(ts_gu_mat)
+min(ts_gu_mat);max(ts_gu_mat)
+dim(ts_gu_mat)
+## 구군별 시계열 그래프 하나의 창으로 모아보기
+windows()
+par(mfrow=c(2,ceiling(ncol(ts_gu_mat)/2)))
+for(i in 1:length(gu_name)){
+  dates = seq(as.Date("2016-01-01"), by = "month", along = ts_gu_mat[,i]) # 날짜 201601~201812 생    
+  tsp = attributes(ts_gu_mat[,i])$tsp
+  plot(ts_gu_mat[,i],xaxt = "n",main = paste(gu_name[i],' 아파트 매매 가격 변화',sep=''),
+       ylab = paste(gu_name[i],' 아파트 매매 가격',sep=''),xlab = '201601 ~ 201812')
+  axis(1, at = seq(tsp[1], tsp[2], along = ts_gu_mat[,i]), labels = format(dates,"%Y%m"))
+}
+## 구군별 시계열 그래프 개별로 보기
+for(i in 1:length(gu_name)){
+  dates = seq(as.Date("2016-01-01"), by = "month", along = ts_gu_mat[,i]) # 날짜 201601~201812 생    
+  tsp = attributes(ts_gu_mat[,i])$tsp
+  windows()
+  plot(ts_gu_mat[,i],xaxt = "n",main = paste(gu_name[i],' 아파트 매매 가격 변화',sep=''),
+       ylab = paste(gu_name[i],' 아파트 매매 가격',sep=''),xlab = '201601 ~ 201812')
+  axis(1, at = seq(tsp[1], tsp[2], along = ts_gu_mat[,i]), labels = format(dates,"%Y%m"))
+}
+## 인천광역시 전체 인구수 그래프
+dates = seq(as.Date("2016-01-01"), by = "month", along = ts_gu_mat[,ncol(ts_gu_mat)]) # 날짜 201601~201812 생    
+tsp = attributes(ts_gu_mat[,ncol(ts_gu_mat)])$tsp
+windows()
+plot(ts_gu_mat[,ncol(ts_gu_mat)],xaxt = "n",main = paste('인천광역시',' 아파트 매매 가격 변화',sep=''),
+     ylab = paste('인천광역시',' 아파트 매매 가격',sep=''),xlab = '201601 ~ 201812')
+axis(1, at = seq(tsp[1], tsp[2], along = ts_gu_mat[,ncol(ts_gu_mat)]), labels = format(dates,"%Y%m"))
+graphics.off()
+
+## 구별 중복 시계열 그래프
+dates = seq(as.Date("2016-01-01"), by = "month", along = ts_gu_mat[,ncol(ts_gu_mat)]) # 날짜 201601~201812 생    
+tsp = attributes(ts_gu_mat[,ncol(ts_gu_mat)])$tsp
+windows()
+plot(ts_gu_mat[,ncol(ts_gu_mat)],xaxt = "n",main = paste('인천광역시',' 아파트 매매 가격 변화',sep=''),
+     xlab = '201601 ~ 201812',ylab=NULL,ylim = c(140,340),lty=2,lwd=2,col=1)
+axis(1, at = seq(tsp[1], tsp[2], along = ts_gu_mat[,ncol(ts_gu_mat)]), labels = format(dates,"%Y%m"))
+text(x=tsp[1],y=ts_gu_mat[1,ncol(ts_gu_mat)],labels = c('전체'),pos=2)
+for(i in 1:9){
+  lines(ts_gu_mat[,i],lty=1,col=i+1,lwd=2)
+  text(x=tsp[1],y=ts_gu_mat[1,i],labels = c(gu_name[i]),pos=2)
+}
+
+
+## 인천광역시 동별 아파트 매매 가격 시계열 그래프
+## 구군별로 읍면동 시계열 데이터 매트릭스 생성하는 함수
+dong_list = function(Gu_name){
+  dong_row = which(dat$구군==Gu_name)
+  dong_dat = t(dat[dong_row,3:38])
+  ts_dong_mat = ts(data = dong_dat,start = c(2016),frequency = 36)
+  return(ts_dong_mat)
+}
+
+gu_name
+for (i in 1:length(gu_name)){
+  a = dong_list(gu_name[i])
+  dong_name = dat[dat$구군==gu_name[i],2]
+  windows()
+  par(mfrow=c(3,ceiling(ncol(a)/3)))  # 그래프 구역 갯수 설정을 위한 숫자
+  for(j in 1:ncol(a)){
+    dates = seq(as.Date("2016-01-01"), by = "month", along = a[,j]) # 날짜 201601~201812 생    
+    tsp = attributes(a[,j])$tsp
+    plot(a[,j],xaxt = "n",main = paste(gu_name[i],' ',dong_name[j],' 아파트 매매 가격 변화',sep=''),
+         ylab = paste(gu_name[i],' ',dong_name[j],' 아파트 매매 가격',sep=''),xlab = '201601 ~ 201812')
+    axis(1, at = seq(tsp[1], tsp[2], along = a[,j]), labels = format(dates,"%Y%m"))
+  } 
+}
+graphics.off()
