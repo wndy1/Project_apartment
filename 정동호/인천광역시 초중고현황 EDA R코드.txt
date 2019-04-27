@@ -1,0 +1,37 @@
+### 인천광역시 초중고현황 EDA ###
+## set working directory
+setwd("C:/Users/wndy4/Desktop/Project_DEMA/정동호/인천초중고")
+
+## load csv file
+dat = read.csv('인천광역시동별초중고현황.csv',header = T, stringsAsFactors=F)
+View(dat)
+
+## 각 구군별 초중고 현황 파악 막대 그래프 및 파이차트
+gu_name = unique(dat$구이름)
+gu_name
+for(i in 1:length(gu_name)){
+  gu_sum=apply(dat[dat$구이름==gu_name[i],3:5], 2, sum)
+  windows()
+  par(mfrow=c(1,2))
+  barplot(gu_sum,main = paste(gu_name[i],' 초중고 현황',sep=''))
+  pie(gu_sum,main = paste(gu_name[i],' 초중고 현황',sep=''))  
+}
+
+## 각 구별 초중고 현황 매트릭스 만들기 
+gu_sum_mat = apply(dat[dat$구이름==gu_name[1],3:5],2,sum)
+for(i in 2:length(gu_name)){
+  b = apply(dat[dat$구이름==gu_name[i],3:5],2,sum)
+  gu_sum_mat = rbind(gu_sum_mat,b)
+}
+rownames(gu_sum_mat) = gu_name
+gu_sum_mat
+dim(gu_sum_mat)
+## 모자이크 플롯
+windows()
+mosaicplot(gu_sum_mat, main = '인천광역시 구군별 초중고 현황',col=rainbow(3))
+
+## 분할표
+library(gmodels)
+CrossTable(gu_sum_mat)
+CrossTable(gu_sum_mat,prop.r = F,prop.c = F,prop.t = F,chisq = T)
+# p-value가 0.05보다 크므로 초중고와 인천광역시 구군 변수 간의 연관성이 없다고 볼 수 있다.
