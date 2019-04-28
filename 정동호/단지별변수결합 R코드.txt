@@ -8,9 +8,9 @@ rm(list = ls())
 setwd('C:/Users/wndy4/Desktop/Project_DEMA')
 
 # 단지별 변수.csv load
-dat = read.csv("단지별변수(수정).csv",header=T,stringsAsFactors=F)
+dat = read.csv("이건도/분양면적수정.csv",header=T,stringsAsFactors=F)
 View(dat)
-
+dat = dat[,-4]
 str(dat)
 
 ### 3년간 평균 인구수 ###
@@ -41,15 +41,15 @@ dim(dat)
 for(i in 1:nrow(gu_pop)){
   for(j in 1:nrow(dat)){
     if(dat[j,2]==gu_pop$행정구역[i]){
-      dat[j,17] = gu_pop$dong_mean[i]
+      dat[j,16] = gu_pop$dong_mean[i]
     }else
       next
   }
 }
-which(is.na(dat$V17))
+which(is.na(dat$V16))
 dim(dat)
 # 새로운 컬럼명 지정
-colnames(dat)[17] ="3년 평균 인구수"
+colnames(dat)[16] ="3년 평균 인구수"
 
 ### 3년간 평균 세대수 ###
 # 인천광역시월별구별세대수(new).csv load
@@ -78,15 +78,15 @@ dim(dat)
 for(i in 1:nrow(gu_sede)){
   for(j in 1:nrow(dat)){
     if(dat[j,2]==gu_sede$행정구역[i]){
-      dat[j,18] = gu_sede$dong_sedemean[i]
+      dat[j,17] = gu_sede$dong_sedemean[i]
     }else
       next
   }
 }
-which(is.na(dat$V18))
+which(is.na(dat$V17))
 dim(dat)
 # 새로운 컬럼명 지정
-colnames(dat)[18] ="3년 평균 세대수"
+colnames(dat)[17] ="3년 평균 세대수"
 
 # 결측값 확인
 which(is.na(dat$`3년 평균 인구수`))
@@ -104,15 +104,15 @@ gu_school = gu_school[,-c(1,3,4,5)]
 for(i in 1:nrow(gu_school)){
   for(j in 1:nrow(dat)){
     if(dat[j,2]==gu_school$동이름[i]){
-      dat[j,19] = gu_school$합계[i]
+      dat[j,18] = gu_school$합계[i]
     }else
       next
   }
 }
-which(is.na(dat$V19))
+which(is.na(dat$V18))
 dim(dat)
 # 새로운 컬럼명 지정
-colnames(dat)[19] ="초중고현황"
+colnames(dat)[18] ="초중고현황"
 
 str(dat)
 ## 파일 내보내기

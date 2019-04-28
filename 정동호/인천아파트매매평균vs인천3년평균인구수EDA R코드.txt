@@ -1,0 +1,30 @@
+### 인천아파트 매매평균 vs. 3년 평균 인구수 EDA ###
+## set working directory 
+setwd('C:/Users/wndy4/Desktop/Project_DEMA')
+## csv file load
+dat = read.csv('정동호/단지별변수(수정).csv',header=T,stringsAsFactors=F)
+View(dat)
+str(dat)
+
+y = dat$매매평균..당가.만원.
+x_pop = dat$X3년.평균.인구수
+
+## 3년 평균 인구수 히스토그램
+windows()
+hist(x_pop,main = "인천 아파트에 대한 3년 평균 인구수 히스토그램")
+# 단봉보다는 쌍봉의 형태를 보이는 것 같다
+# 왼쪽으로 쏠려있는 모양이다.
+windows()
+boxplot(x_pop)
+## 산점도
+windows()
+plot(x_pop,y,main='인천아파트 매매평균 vs. 3년 평균 인구수')
+## boxplot
+windows()
+boxplot(y ~ x_pop,main = '인천아파트 매매평균 vs. 3년 평균 인구수')
+
+## spearman correlation
+cor.test(x = x_pop, y = y, method="spearman")
+# rho가 0.32이기에 어느정도 양의 상관관계를 보인다고 할 수 있다.
+## 상관관계
+cor(x_pop,y)

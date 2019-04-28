@@ -1,0 +1,21 @@
+### 인천아파트 매매평균 vs. 인천 초중고 현황 EDA ###
+## set working directory 
+setwd('C:/Users/wndy4/Desktop/Project_DEMA')
+## csv file load
+dat = read.csv('정동호/단지별변수(수정).csv',header=T,stringsAsFactors=F)
+
+y = dat$매매평균..당가.만원.
+x_school = dat$초중고현황
+# 산점도
+windows()
+plot(x_school,y,main='인천아파트 매매평균 vs. 인천 초중고 현황')
+windows()
+boxplot(y ~ x_school,main='인천아파트 매매평균 vs. 인천 초중고 현황')
+# 대략적으로 초중고 개수가 많아질수록 아파트 매매평균가격이 상승하는 것을 유추할 수 있다.
+
+# spearman correlation
+cor.test(x = x_school,y = y,method = 'spearman')
+# rho 값이 0.3233이므로 양적 상관관계를 보인다고 할 수 있다.
+# 상관관계
+cor(x_school,y)
+# 0.4176
