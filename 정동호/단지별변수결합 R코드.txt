@@ -8,7 +8,7 @@ rm(list = ls())
 setwd('C:/Users/wndy4/Desktop/Project_DEMA')
 
 # 단지별 변수.csv load
-dat = read.csv("이건도/단지별변수.csv",header=T,stringsAsFactors=F)
+dat = read.csv("단지별변수(수정).csv",header=T,stringsAsFactors=F)
 View(dat)
 
 str(dat)
@@ -34,13 +34,19 @@ gu_pop = cbind(gu_pop,dong_mean)
 dim(gu_pop)
 gu_pop = gu_pop[,c(1,38)]
 dim(gu_pop)
+
 ## 해당 행정구역에 맞는 값을 넣어서 3년 평균 인구수 변수로 새로운 열 추가
 dim(dat)
 # 해당 행정구역에 맞는 인구수 넣기
 for(i in 1:nrow(gu_pop)){
-  pop = grep(gu_pop$행정구역[i],dat$읍면동)
-  dat[pop,17] = gu_pop$dong_mean[i]
+  for(j in 1:nrow(dat)){
+    if(dat[j,2]==gu_pop$행정구역[i]){
+      dat[j,17] = gu_pop$dong_mean[i]
+    }else
+      next
+  }
 }
+which(is.na(dat$V17))
 dim(dat)
 # 새로운 컬럼명 지정
 colnames(dat)[17] ="3년 평균 인구수"
@@ -70,9 +76,14 @@ dim(gu_sede)
 dim(dat)
 # 해당 행정구역에 맞는 세대수 넣기
 for(i in 1:nrow(gu_sede)){
-  sede = grep(gu_sede$행정구역[i],dat$읍면동)
-  dat[sede,18] = gu_sede$dong_sedemean[i]
+  for(j in 1:nrow(dat)){
+    if(dat[j,2]==gu_sede$행정구역[i]){
+      dat[j,18] = gu_sede$dong_sedemean[i]
+    }else
+      next
+  }
 }
+which(is.na(dat$V18))
 dim(dat)
 # 새로운 컬럼명 지정
 colnames(dat)[18] ="3년 평균 세대수"
@@ -98,11 +109,11 @@ for(i in 1:nrow(gu_school)){
       next
   }
 }
-
-for(i in 1:nrow(gu_school)){
-  school = grep(gu_school$동이름[i],dat$읍면동)
-  dat[school,19] = gu_school$합계[i]
-}
+which(is.na(dat$V19))
 dim(dat)
 # 새로운 컬럼명 지정
-colnames(dat)[18] ="3년 평균 세대수"
+colnames(dat)[19] ="초중고현황"
+
+str(dat)
+## 파일 내보내기
+write.csv(dat,file='./정동호/단지별변수(수정).csv')
