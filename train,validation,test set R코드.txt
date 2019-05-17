@@ -1,0 +1,25 @@
+### train set, validation set, test set 나누기
+setwd("C:/Users/wndy4/Desktop/Project_DEMA")
+# 데이터 불러오기
+dat = read.csv("단지별변수(추가).csv",header=T,stringsAsFactors=F)
+
+View(dat)
+nrow(dat)
+
+# train, validtation, test의 랜덤 인덱싱 생성
+# 4:3:3의 확률로 구분
+idx = sample(x=c("train","validation","test"),replace=T,size = nrow(dat),prob=c(0.4,0.3,0.3))
+
+# train set, validation set, test set 생성
+train = dat[idx == "train",]
+valid = dat[idx=="validation",]
+test = dat[idx=="test",]
+
+nrow(train)
+nrow(valid)
+nrow(test)
+
+# 각각의 파일로 저장
+write.csv(train,"train set.csv")
+write.csv(valid,"validation set.csv")
+write.csv(test,"test set.csv")
