@@ -1,0 +1,109 @@
+#### 결정트리 학습법1
+# tree package 이용
+library(tree)
+library(caret)
+# load train.csv file
+setwd("C:/Users/wndy4/Desktop/Project_DEMA")
+
+train = read.csv('train set.csv',header = T, stringsAsFactors = F)
+
+
+View(train)
+
+# 불필요한 항목 제거
+train = train[,-c(1,2,3)]
+
+# tree 학습
+tree1 = tree(train$평균매매가.제곱미터당.만원.~.,data=train)
+tree1
+
+x11()
+plot(tree1)
+text(tree1, pretty = 0)
+
+# pruning?
+?cv.tree
+cv.tree1 = cv.tree(tree1,FUN = prune.tree)
+x11()
+plot(cv.tree1)
+# cv그래프 상 size 8에서 가장 분산이 낮으므로 pruning 불필요
+
+# validation
+valid = read.csv('validation set.csv',header = T,stringsAsFactors = F)
+valid = valid[,-c(1,2,3)]
+
+
+predict1 = predict(tree1,valid,type='vector')
+predict
+
+# 예측 한 것을 분석? 어떻게 평가를 해야하는가????
+y = valid$평균매매가.제곱미터당.만원.
+y_hat = predict1
+e = y - y_hat
+cor.test(y,y_hat)
+
+x11()
+hist(e)
+
+x11()
+qqnorm(e)
+
+x11()
+boxplot(y~y_hat)
+
+#### 결정트리 학습법2
+# rpart package 사용
+library(rpart)
+?rpart
+?rpart.control
+control = rpart.control(xval = 10,cp=0, minsplit = 150)
+# xval : 교차 타당성의 fold 개수
+# cp : complexity parameter, 오분류값, cp=0이면 오분류값 최소, 디폴트는 0.01
+# minsplit : 한 노드를 분할하기 위해 필요한 데이터의 개수
+tree2 = rpart(train$평균매매가.제곱미터당.만원.~.,data=train,method = 'anova',control = control)
+tree2
+x11()
+plot(tree2)
+text(tree2)
+
+# rattle 패키지를 이용한 트리 그림 구현
+install.packages('rattle')
+library(rattle)
+x11()
+fancyRpartPlot(tree2)
+# pruning
+printcp(tree2) # xerror(오분율)
+?printcp
+
+x11()
+plotcp(tree2) # minsplit이 많든, 적든 size가 클수록 xerorr(오분율)은 계속 낮아지는 것을 확인
+
+# validation 이것도 어떻게 해야하나????
+predict2 = predict(tree2,newdata = valid)
+
+y = valid$평균매매가.제곱미터당.만원.
+y_hat = predict2
+e = y - y_hat
+cor.test(y,y_hat)
+
+x11()
+hist(e)
+
+shapiro.test(e)
+
+x11()
+qqnorm(e)
+
+graphics.off()
+
+#### 결정트리 학습법3
+# ctree 이용
+# 좀더 알아보자
+install.packages('party')
+library(party)
+?ctree_control
+control3 = ctree_control(minsplit = 300)
+tree3 = ctree(train$평균매매가.제곱미터당.만원.~.,data=train,control = control3)
+
+x11()
+plot(tree3)

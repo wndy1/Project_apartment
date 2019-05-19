@@ -1,0 +1,27 @@
+# 인천광역시 평균 아파트 매매 가격 예측에 결정트리 학습법
+
+# rpart, tree, party의 ctree에 대한 이해관련 사이트
+http://blog.naver.com/PostView.nhn?blogId=tjdudwo93&logNo=221041160026
+https://rstatistics.tistory.com/24
+
+# rpart 이용
+ - CART(Classifciation and Regression tree)
+ - 지니 계수 사용
+ - overfitting 문제 존재 -> pruning 필요
+참고사이트
+https://kmrho1103.tistory.com/tag/rpart
+https://rpubs.com/jmhome/DecisionTree
+
+# tree
+ - 엔트로피 지수 사용
+ - overfitting 문제 존재 -> pruning 필요
+https://rpubs.com/jmhome/DecisionTree
+https://rstudio-pubs-static.s3.amazonaws.com/28003_761efda1e33341c59f56f663fbe90619.html
+
+# party의 ctree
+ - party 패키지는 Unbiased recursive partitioning based on permutation tests 방법론 사용 
+ - p-test를 거친 Significance를 기준으로 가지치기를 할 변수를 결정하기 때문에 biased 될 위험X
+ -  별도로 Pruning할 필요가 없다는 장점 존재
+ - 대신 입력 변수의 레벨이 31개 까지로 제한되어 있다는 단점 존재
+https://rpubs.com/jmhome/DecisionTree
+http://blog.naver.com/PostView.nhn?blogId=tjdudwo93&logNo=221041168345&parentCategoryNo=&categoryNo=&viewDate=&isShowPopularPosts=false&from=postView
