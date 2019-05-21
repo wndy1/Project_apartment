@@ -1,5 +1,6 @@
-# 인천광역시 평균 아파트 매매 가격 예측에 결정트리 학습법
-
+### 인천광역시 평균 아파트 매매 가격 예측에 결정트리 학습법
+# 범주형 변수에 대한 의사결정 학습법 관련 사이트
+https://mrkevinna.github.io/%EB%B6%84%EB%A5%98%EB%AA%A8%ED%98%95-3/
 # rpart, tree, party의 ctree에 대한 이해관련 사이트
 http://blog.naver.com/PostView.nhn?blogId=tjdudwo93&logNo=221041160026
 https://rstatistics.tistory.com/24
