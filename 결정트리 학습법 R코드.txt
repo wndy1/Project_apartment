@@ -5,7 +5,7 @@ library(caret)
 library(rpart)
 library(party)
 graphics.off()
-# load train.csv file
+## load train.csv file
 setwd("C:/Users/wndy4/Desktop/Project_DEMA")
 
 train = read.csv('train set.csv',header = T, stringsAsFactors = F)
@@ -15,6 +15,15 @@ View(train)
 
 # 불필요한 항목 제거
 train = train[,-c(1,2,3)]
+
+##
+
+## validation
+# 검증 작업
+valid = read.csv('validation set.csv',header = T,stringsAsFactors = F)
+valid = valid[,-c(1,2,3)]
+
+##
 
 # tree 학습
 # control.tree1 = tree.control(nrow(train),mincut=5)
@@ -33,11 +42,6 @@ cv.tree1 = cv.tree(tree1,FUN = prune.tree)
 x11()
 plot(cv.tree1)
 # cv그래프 상 size 8에서 가장 분산이 낮으므로 pruning 불필요
-
-# 검증 작업
-# validation
-valid = read.csv('validation set.csv',header = T,stringsAsFactors = F)
-valid = valid[,-c(1,2,3)]
 
 # valid을 이용한 적합값 생성
 predict1.valid = predict(tree1,valid,type='vector')
@@ -61,15 +65,24 @@ control = rpart.control(xval = 10,cp=0, minsplit = 150)
 # cp : complexity parameter, 오분류값, cp=0이면 오분류값 최소, 디폴트는 0.01
 # minsplit : 한 노드를 분할하기 위해 필요한 데이터의 개수
 tree2 = rpart(train$평균매매가.제곱미터당.만원.~.,data=train,method = 'anova',control = control)
-tree2
+
+
 summary(tree2)
 x11()
 plot(tree2)
 text(tree2)
 
-# rattle 패키지를 이용한 트리 그림 구현
+# tree plot
 x11()
-fancyRpartPlot(tree2)
+plot(tree2,uniform=T,margin=0.1)
+text(tree2, use.n=T, all=T)
+
+# rpart tree plot
+library(rpart.plot)
+x11()
+rpart.plot(x=tree2)
+
+
 # pruning
 printcp(tree2) # xerror(오분율)
 ?printcp
@@ -77,13 +90,15 @@ printcp(tree2) # xerror(오분율)
 x11()
 plotcp(tree2) # minsplit이 많든, 적든 size가 클수록 xerorr(오분율)은 계속 낮아지는 것을 확인
 
-# validation 이것도 어떻게 해야하나????
-predict2 = predict(tree2,newdata = valid)
+# rpart에서의 validation을 이용한 적합값
+predict2.valid = predict(tree2,newdata = valid)
 
 y = valid$평균매매가.제곱미터당.만원.
-y_hat = predict2
+y_hat = predict2.valid
 e = y - y_hat
-cor.test(y,y_hat)
+
+# MSE 구하기
+mean(e^2)
 
 x11()
 hist(e)
@@ -93,16 +108,33 @@ shapiro.test(e)
 x11()
 qqnorm(e)
 
-graphics.off()
+## terminal node 수에 따라 MSE의 변화 체크
+minsplit = c(500,400,300,200,100,50,10)
+mse = NULL
+for(i in 1:length(minsplit)){
+  control = rpart.control(xval = 10,cp=0, minsplit = minsplit[i])
+  tree2 = rpart(train$평균매매가.제곱미터당.만원.~.,data=train,method = 'anova',control = control)
+  tree2
+  predict2.valid = predict(tree2,newdata = valid)
+  y = valid$평균매매가.제곱미터당.만원.
+  y_hat = predict2.valid
+  e = y - y_hat
+  mse[i] = mean(e^2)
+}
+
+x11()
+plot(mse~minsplit)
+# terminal node 수가 증가할수록 mse가 낮아진다.
+x11()
+plot(y_hat~y)
+abline(0,1,col=2)
 
 #### 결정트리 학습법3
 # ctree 이용
 # 좀더 알아보자
-install.packages('party')
-library(party)
 ?ctree_control
 control3 = ctree_control(minsplit = 300)
-tree3 = ctree(train$평균매매가.제곱미터당.만원.~.,data=train,control = control3)
+tree3 = ctree(train$평균매매가.제곱미터당.만원.~.,data=train)
 
 x11()
 plot(tree3)

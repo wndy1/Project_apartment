@@ -4,7 +4,8 @@ https://mrkevinna.github.io/%EB%B6%84%EB%A5%98%EB%AA%A8%ED%98%95-3/
 # rpart, tree, party의 ctree에 대한 이해관련 사이트
 http://blog.naver.com/PostView.nhn?blogId=tjdudwo93&logNo=221041160026
 https://rstatistics.tistory.com/24
-
+# 연속형 반응변수에 대한 의사결정 학습법 관련 사이트
+http://www.rpubs.com/updragon/DecisionTree 
 # rpart 이용
  - CART(Classifciation and Regression tree)
  - 지니 계수 사용
