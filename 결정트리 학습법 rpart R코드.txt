@@ -1,0 +1,53 @@
+#### 결정트리 학습법2
+# rpart package 사용
+# tree package 이용
+library(tree)
+library(caret)
+library(rpart)
+library(party)
+graphics.off()
+## load train.csv file
+setwd("C:/Users/wndy4/Desktop/Project_DEMA")
+
+train = read.csv('train set.csv',header = T, stringsAsFactors = F)
+
+
+View(train)
+
+# 불필요한 항목 제거
+train = train[,-c(1,2,3)]
+
+##
+
+## validation
+# 검증 작업
+valid = read.csv('validation set.csv',header = T,stringsAsFactors = F)
+valid = valid[,-c(1,2,3)]
+
+## test set
+test = read.csv('test set.csv',header=T,stringsAsFactors = F)
+test = test[,-c(1,2,3)]
+?rpart
+?rpart.control
+control = rpart.control(xval = 10,cp=0, minsplit = 100)
+?rpart.control
+# xval : 교차 타당성의 fold 개수
+# cp : complexity parameter, 오분류값, cp=0이면 오분류값 최소, 디폴트는 0.01
+# minsplit : 한 노드를 분할하기 위해 필요한 데이터의 개수
+tree2 = rpart(train$평균매매가.제곱미터당.만원.~.,data=train,method = 'anova',control = control)
+
+minsplit = c(500,400,300,200,100,50,10)
+mse = NULL
+for(i in 1:length(minsplit)){
+  control = rpart.control(xval = 10,cp=0, minsplit = minsplit[i])
+  tree2 = rpart(train$평균매매가~.,data=train,method = 'anova',control = control)
+  printcp(tree2)
+  predict2.test = predict(tree2,newdata = test)
+  y = test$평균매매가
+  y_hat = predict2.test
+  e = y - y_hat
+  mse[i] = mean(e^2)
+}
+
+x11()
+plot(mse~minsplit)
