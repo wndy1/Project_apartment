@@ -307,3 +307,12 @@ sum(e3_1^2)/(n-p3_1-1)
 # 1334.331로 X11제거후 variable selection(1348.721)보다 낮지만, orign varable selection(1217.055)보다는 높다
 
 # stepwise, X12(평균 세대수)를 뺀 회귀모형 적용
+# test MSE
+View(test)
+test.mat = test[,-c(4,9,13)]
+test.mat[,1] = 1
+test.mat = as.matrix(test.mat)
+# predict test set
+test_hat = as.vector(coef.stepwise3%*%t(test.mat))
+e_test = test$평균매매가 - test_hat
+sum(e_test^2)/(n-11)
