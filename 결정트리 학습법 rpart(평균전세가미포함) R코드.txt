@@ -1,4 +1,4 @@
-#### 결정트리 학습법2
+#### 결정트리 학습법2 평균전세가 제외
 # rpart package 사용
 # tree package 이용
 library(tree)
@@ -15,18 +15,19 @@ train = read.csv('train set.csv',header = T, stringsAsFactors = F)
 View(train)
 
 # 불필요한 항목 제거
-train = train[,-c(1,2,3)]
+# 평균전세가 항목 제거
+train = train[,-c(1,2,3,10)]
 
 ##
 
 ## validation
 # 검증 작업
 valid = read.csv('validation set.csv',header = T,stringsAsFactors = F)
-valid = valid[,-c(1,2,3)]
-
+valid = valid[,-c(1,2,3,10)]
 ## test set
 test = read.csv('test set.csv',header=T,stringsAsFactors = F)
-test = test[,-c(1,2,3)]
+test = test[,-c(1,2,3,10)]
+
 ?rpart
 ?rpart.control
 control = rpart.control(xval = 10,cp=0, minsplit = 100)
@@ -34,31 +35,43 @@ control = rpart.control(xval = 10,cp=0, minsplit = 100)
 # xval : 교차 타당성의 fold 개수
 # cp : complexity parameter, 오분류값, cp=0이면 오분류값 최소, 디폴트는 0.01
 # minsplit : 한 노드를 분할하기 위해 필요한 데이터의 개수
-tree2 = rpart(train$평균매매가.제곱미터당.만원.~.,data=train,method = 'anova',control = control)
+# tree2 = rpart(train$평균매매가.제곱미터당.만원.~.,data=train,method = 'anova',control = control)
+
+## 초기 모형
+tree = rpart(train$평균매매가~.,data=train,method = 'anova')
+
+x11()
+plot(tree,uniform=T,margin=0.1,main = "인천아파트 평균매매가 의사결정 초기 모형(평균전세가 미포함)")
+text(tree, use.n=T)
+
+tree1 = rpart(train$평균매매가~.,data=train,method = 'anova',control = rpart.control(cp=0))
+printcp(tree1)
+x11()
+plotcp(tree1)
+
 
 # train mse
-minsplit = c(10:500)
-mse = NULL
+minsplit = c(146)
+mse1 = NULL
 for(i in 1:length(minsplit)){
   control = rpart.control(xval = 10,cp=0, minsplit = minsplit[i])
-  tree2 = rpart(train$평균매매가~.,data=train,method = 'anova',control = control)
+  tree1 = rpart(train$평균매매가~.,data=train,method = 'anova',control = control)
   #printcp(tree2)
   #x11()
   #plotcp(tree2)
-  predict2.train = predict(tree2,newdata = train)
+  predict1.train = predict(tree1,newdata = train)
   y = train$평균매매가
-  y_hat = predict2.train
+  y_hat = predict1.train
   e = y - y_hat
-  mse[i] = mean(e^2)
+  mse1[i] = mean(e^2)
 }
-mse
-graphics.off()
-x11()
-plot(mse~minsplit,type='l',main="minsplit에 따른 Train MSE 변화")
+mse1
+
+
 
 # validaiton mse
-minsplit = c(10:500)
-mse1 = NULL
+minsplit = c(146)
+mse2 = NULL
 for(i in 1:length(minsplit)){
   control = rpart.control(xval = 10,cp=0, minsplit = minsplit[i])
   tree2 = rpart(train$평균매매가~.,data=train,method = 'anova',control = control)
@@ -69,32 +82,31 @@ for(i in 1:length(minsplit)){
   y = valid$평균매매가
   y_hat = predict2.valid
   e = y - y_hat
-  mse1[i] = mean(e^2)
+  mse2[i] = mean(e^2)
 }
-mse1
+mse2
 graphics.off()
-x11()
-plot(mse~minsplit,type='l',main="minsplit에 따른 validaiton MSE 변화")
+
 # 겹쳐보기
 x11()
-plot(x=minsplit,y=mse,type='l',main="minsplit에 따른 Train MSE와 validation MSE 변화 비교")
-lines(x=minsplit,y=mse1,col=2)
+plot(x=minsplit,y=mse1,type='l',main="minsplit에 따른 Train MSE와 validation MSE 변화 비교")
+lines(x=minsplit,y=mse2,col=2)
 legend("topleft",legend = c("train MSE","validation MSE"),lty = c(1,1),col=c("black","red"))
 
 # Pruning
-tree = rpart(train$평균매매가~.,data=train,method = 'anova',control = rpart.control(xval=10,minsplit = 125,cp=0))
+tree = rpart(train$평균매매가~.,data=train,method = 'anova',control = rpart.control(xval=10,minsplit = 146,cp=0))
 x11()
 plotcp(tree)
 printcp(tree)
 ?rpart.control
 
 x11()
-plot(tree,uniform=T,margin=0.1,main = "인천아파트 평균매매가 의사결정 모형(평균전세가 포함)")
+plot(tree,uniform=T,margin=0.1,main = "인천아파트 평균매매가 의사결정 최종모형(평균전세가 미포함)")
 text(tree, use.n=T)
 
 # test set 적용 mse 값 확인
-minsplit = c(125)
-mse2 = NULL
+minsplit = c(146)
+mse3 = NULL
 for(i in 1:length(minsplit)){
   control = rpart.control(xval = 10,cp=0, minsplit = minsplit[i])
   tree3 = rpart(train$평균매매가~.,data=train,method = 'anova',control = control)
@@ -105,21 +117,10 @@ for(i in 1:length(minsplit)){
   y = test$평균매매가
   y_hat = predict3.test
   e = y - y_hat
-  mse2[i] = mean(e^2)
+  mse3[i] = mean(e^2)
 }
-mse2 
+mse3 
 # minsplit = 125(terminal node = 15)
-# train MSE = 1477.903
-# validaion MSE = 1398.396
-# test MSE = 1303.861
-
-# 평균 전세가 제거 후 결정트리 적합
-View(train)
-train2 = train[,-7]
-
-control = rpart.control(xval = 10,cp=0, minsplit = 100)
-tree3 = rpart(train2$평균매매가~.,data=train2,method = 'anova',control = control)
-
-x11()
-plot(tree3,uniform=T,margin=0.05,main = "인천아파트 평균매매가 의사결정 모형(평균전세가 미포함)")
-text(tree3, use.n=T)
+# train MSE = 2058.659
+# validaion MSE = 2010.161
+# test MSE = 2244.963
