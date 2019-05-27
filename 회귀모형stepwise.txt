@@ -45,7 +45,11 @@ X14 = train$개발호재
 X15 = train$평균혼인건수
 # 회귀 적합
 reg.train = lm(Y~X1+X2+X3+X4+X5+X6+X7+X8+X9+X10+X11+X12+X13+factor(X14)+X15,data=train)
-
+e_t = train$평균매매가 - fitted(reg.train)
+sum(e_t^2)/(nrow(train)-14)
+# 초기모형 train MSE : 1369.551
+sum(reg.train$residuals^2)/(nrow(train)-14)
+summary(reg.train)
 # validation set으로 모델 평가
 coef = reg.train$coefficients
 valid.mat = valid
@@ -62,8 +66,9 @@ p = 15
 x11()
 plot(valid.hat~valid$평균매매가)
 
-# MSE 구하기
+# 초기모형 validaiton MSE 구하기
 sum(e^2)/(n-p-1) # 1220.949
+
 # adjusted R2 구하기
 SSE.valid = sum(e^2)
 SST.valid = sum((valid$평균매매가-mean(valid$평균매매가))^2)
@@ -72,6 +77,14 @@ SST.valid
 
 ad.R2.valid = 1-((SSE.valid/(n-p-1))/(SST.valid/(n-1)))
 ad.R2.valid # 0.7881567
+
+valid.mat = valid
+valid.mat[,1] = 1
+valid.mat = as.matrix(valid.mat)
+View(valid.mat)
+# predict valid.hat
+valid.hat = as.vector(coef%*%t(valid.mat))
+
 
 ## 모형 진단하기
 summary(reg.train)
@@ -155,6 +168,11 @@ step(reg.train1, scope = list(upper = reg.train,lower = reg.train1),direction = 
 reg.train.stepwise1 = lm(Y ~ X2+X4+X5+X6+X7+X8+X9+X11+X12+X13+factor(X14)+X15,data=train)
 coef.stepwise1 = reg.train.stepwise1$coefficients
 summary(reg.train.stepwise1)
+# 초기모형 stepwise variable selection train MSE
+sum(reg.train.stepwise1$residuals^2)/(nrow(train)-)
+sum((train$평균매매가 - fitted(reg.train.stepwise1))^2)/(nrow(train)-11)
+# 1367.26
+
 # predict valid.hat
 valid.mat1 = valid[,-c(2,4,11)]
 valid.mat1[,1] = 1
@@ -169,7 +187,7 @@ p1 = 12
 x11()
 plot(valid.hat1~valid$평균매매가)
 
-# MSE 구하기
+# 초기모형 stepwise variable selection validation MSE 구하기
 sum(e1^2)/(n-p1-1)
 # 기존 1220.949에서 1217.055로 감소
 # adjusted R2 구하기
@@ -187,7 +205,11 @@ sqrt(vif(reg.train.stepwise1))>sqrt(10)
 ## 2. X11 제거 후 variable selection 진행
 reg.train2 = lm(Y~X1+X2+X3+X4+X5+X6+X7+X8+X9+X10+X12+X13+factor(X14)+X15,data=train)
 summary(reg.train2)
+# X11 제거 후 train MSE
+sum(reg.train2$residuals^2)/(nrow(train)-13)
+# 1527.122
 vif(reg.train2)>10
+
 # validation set 을 통한 검증
 coef2 = reg.train2$coefficients
 valid.mat2 = valid[,-12]
@@ -201,7 +223,7 @@ e2 = valid$평균매매가 - valid.hat2
 n = nrow(valid)
 p2 = 14
 
-# MSE
+# X11 제거 후 validation MSE
 sum(e2^2)/(n-p2-1)
 # 1347.754로 1220.949보다 높다
 
@@ -226,13 +248,16 @@ step(reg.train1, scope = list(upper = reg.train2,lower = reg.train1),direction =
 reg.train.stepwise2 = lm(Y ~ X1+X2+X3+X4+X5+X6+X7+X9+X10+X13+factor(X14)+X15,data=train)
 coef.stepwise2 = reg.train.stepwise2$coefficients
 summary(reg.train.stepwise2)
+# X11 제거후 stepwise train MSE
+sum(reg.train.stepwise2$residuals^2)/(nrow(train)-11)
+# 1525.889
 vif(reg.train.stepwise2)>10
 # forward
 step(reg.train1, scope = list(upper = reg.train2,lower = reg.train1),direction = 'forward')
 
 
 
-# mse 비교
+# X11 제거후 stepwise validation mse 비교
 valid.mat2_2 = valid[,-c(9,12,13)]
 valid.mat2_2[,1] = 1
 valid.mat2_2 = as.matrix(valid.mat2_2)
@@ -243,13 +268,16 @@ e2_2 = valid$평균매매가 - valid.hat2_2
 n = nrow(valid)
 p2_2 = 12
 
-# MSE
+# X11 제거후 validaiton MSE
 sum(e2_2^2)/(n-p2_2-1)
 # 1348.721
 
 ## 3. X12 제거 후 variable selection 진행
 reg.train3 = lm(Y~X1+X2+X3+X4+X5+X6+X7+X8+X9+X10+X11+X13+factor(X14)+X15,data=train)
 summary(reg.train3)
+# X12 제거후 train MSE
+sum(reg.train3$residuals^2)/(nrow(train)-13)
+# 1509.502
 vif(reg.train3)>10
 # validation set 을 통한 검증
 coef3 = reg.train3$coefficients
@@ -263,7 +291,7 @@ e3 = valid$평균매매가 - valid.hat3
 n = nrow(valid)
 p3 = 14
 
-# MSE
+# X12 제거후 validation MSE
 sum(e3^2)/(n-p3-1)
 # 1328.958로 X11 제거시(1347.754)보다 낮고, origin(1220.949)보다는 높다
 
@@ -288,9 +316,13 @@ step(reg.train1, scope = list(upper = reg.train3,lower = reg.train1),direction =
 reg.train.stepwise3 = lm(Y ~ X1+X2+X4+X5+X6+X7+X9+X10+X11+X13+factor(X14)+X15,data=train)
 coef.stepwise3 = reg.train.stepwise3$coefficients
 summary(reg.train.stepwise3)
+reg.train.stepwise3$coefficients
+# X12 제거후 stepwise train MSE
+sum(reg.train.stepwise3$residuals^2)/(nrow(train)-11)
+# 1511.268
 vif(reg.train.stepwise3)>10
 
-# mse 비교
+# X12 제거후 stepwise validation mse 비교
 valid.mat3_1 = valid[,-c(4,9,13)]
 valid.mat3_1[,1] = 1
 valid.mat3_1 = as.matrix(valid.mat3_1)
@@ -316,3 +348,30 @@ test.mat = as.matrix(test.mat)
 test_hat = as.vector(coef.stepwise3%*%t(test.mat))
 e_test = test$평균매매가 - test_hat
 sum(e_test^2)/(n-11)
+graphics.off()
+
+# 최종모형 선택은 다중공선성을 제거를 위해 X12 변수를 제거하고 stepwise을 통해 변수선택된 모형이다.
+# validation MSE도 train MSE에 비해 낮아졌다.
+
+# 해석
+
+reg.train.stepwise3 = lm(Y ~ X1+X2+X4+X5+X6+X7+X9+X10+X11+X13+factor(X14)+X15,data=train)
+final.reg = reg.train.stepwise3
+final.reg$coefficients
+
+round(sort(final.reg$coefficients,decreasing = T),4)
+# X14 : 개발호재, 18.8459로 모델의 변수 중에서 가장 높다
+# X5 : 역세권점수, 6.7173
+# X10 : 스타벅스, 3.7135
+# X13 : 교육시설수, 2.21412
+# X6 : 평균전세가 : 0.6467
+# X1 : 분양면적 : 0.0964
+# X2 : 단지세대수 : 0.0042
+# X11 : 평균인구수 : 0.0002
+# X15 : 평균혼인건수 : -0.0616
+# X9 : 쇼핑시설수 : -0.3640
+# X7 : 토지면적, -0.6610
+# X4 : 노후도 : -1.9706
+# 집값에 많은 영향을 준다고 잘 알려진 변수들이 상위권에 존재한다.
+# 개발호재가 인천아파트 평균매매가 형성에 많은 영향을 주는 것을 알 수 있고
+# 역세권점수 또한 예상 가능했다. 반면에 스타벅스가 교육시설수보다 계수가 높은 것은 신선하다
