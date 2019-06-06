@@ -1,0 +1,101 @@
+### 인천광역시 월별 구별 아파트 매매가격 변동(new) EDA ###
+## 시계열 자료
+rm(list=ls())
+graphics.off()
+## set working directory
+setwd('C:/Users/wndy4/Desktop/Project_DEMA/정동호/인천광역시 월별구별 아파트 매매 관련 그래프')
+
+## Load csv file
+dat = read.csv('인천지역 아파트 매매가격 변동(월단위).csv',header=T,stringsAsFactors=F)
+View(dat)
+## 열명 수정
+colnames(dat) = gsub('X','',colnames(dat))
+colnames(dat)
+## 기초정보
+dim(dat)
+str(dat)
+
+## 구군별 합계 시계열 데이터 매트릭스
+# data에 transpose 하는 이유는 plot 에서 행 벡터 인식 X 열 벡터 인식 O
+incheon = t(dat[1,3:41])
+ts_incheon = ts(data = incheon,start = c(2016,1),frequency = 12)
+incheon1 = t(dat[1,3:38])
+ts_incheon1 = ts(data = incheon1,start = c(2016,1),frequency = 12)
+View(ts_incheon)
+
+library(tseries)
+library(forecast)
+
+x11()
+plot(ts_incheon,main="인천광역시 제곱미터당 평균 매매가 변동",xlab="201601~201903",ylab="제곱미터당 평균 매매가")
+x11()
+plot(ts_incheon1,main="인천광역시 제곱미터당 평균 매매가 변동",xlab="201601~201812",ylab="제곱미터당 평균 매매가")
+
+# decomposition
+#x11()
+#plot(stl(ts_incheon1),main="계절성, 트렌드, 주기 파악")
+# trend가 존재하고, 계절성 존재 -> 정상성 판단 후 차분 or 변수 변환 고려
+
+# 정상성 판단
+# ACF, PACF 이용
+x11()
+acf(ts_incheon1,36,main="인천광역시 제곱미터당 평균 매매가 변동 ACF")
+# 지수적 감소는 보이지 않음.
+x11()
+pacf(ts_incheon1,36,main="인천광역시 제곱미터당 평균 매매가 변동 PACF")
+# Cut off after lag 1 -> AR(1)의 가능성 존재?
+
+# 정상성 검정
+adf.test(ts_incheon1,alternative = "stationary",k=0)
+# p-value가 0.9632이므로 유의확률 0.05 수준에서 귀무가설을 기각할 수 없다. -> 비정상성이라 할 수 있다.
+
+# 1차 차분 진행
+df.incheon = diff(ts_incheon1,1)
+
+x11()
+plot(df.incheon)
+
+# 1차 차분에 대한 정상성 판단
+x11()
+acf(df.incheon,36,main="1차 차분 ACF")
+# Cut off after lag 3 -> MA(3)
+# Or Cut off after lag 1 -> MA(1)
+x11()
+pacf(df.incheon,36,main="1차 차분 PACF")
+# PACF가 거의 0에 가깝다고 할 수 있다.
+# Cut off after lag 2 -> AR(2)
+
+# 1차 차분에 대한 정상성 검정
+adf.test(df.incheon,alternative = "stationary",k=0)
+# 단위근 검정에서 p-value가 0.01보다 작으므로 유의수준 0.05에서 귀무가설을 기각할 수 있다.
+# 1차 차분에 대해 정상성이 있다고 볼 수 있다.
+
+# ARIMA 모형
+# AR(p)와 MA(q)와 ,d 세가지 파라미터 찾아야한다. (p,d,q)
+auto.arima(df.incheon) # ARIMA(0,0,2)
+auto.arima(ts_incheon1)
+x11()
+tsdiag(auto.arima(df.incheon))
+# 세 그래프가 모두 뚜렷한 패턴(증가하거나 감소하거나 등)이 없어서 가정으 만족
+
+# ARIMA 만들기
+# auto.arima 이용하여 만든 ARIMA 모형
+fit = arima(ts_incheon1,order=c(0,1,2))
+fit = arima(ts_incheon1,order=c(0,1,0),seasonal = list(order = c(0, 0, 1), period = 12))
+?arima
+# ACF, PACF 절단값을 이용해 만든 ARIMA 모형
+fit2 = arima(ts_incheon1,order=c(2,1,3))
+# 예측
+# ARIMA(0,1,2)
+incheon.fcast = forecast(fit,h=5)
+x11()
+plot(incheon.fcast) # 오히려 감소세를 보인다.
+# ARIMA(2,1,3)
+incheon.fcast2 = forecast(fit2,h=5)
+x11()
+plot(incheon.fcast2,main="ARIMA(2,1,3) forecast",lwd=2,col=1)
+
+x11()
+plot(incheon.fcast2,main="ARIMA(2,1,3) forecast와 실제 변동 비교",lwd=2,col=1)
+lines(ts_incheon,col=2,lty=2)
+# MA(1)로 예측하는 경우, 가격 상승을 예측 가능 

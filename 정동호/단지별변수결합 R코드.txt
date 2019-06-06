@@ -1,0 +1,119 @@
+### 단지별 변수.csv에 변수 추가 ###
+## 추가해야할 변수
+# 16년 1월 18년 12월 기간의 3년 간 평균 인구수
+# 16년 1월 18년 12월 기간의 3년 간 평균 세대수
+# 동별 초중고 합
+rm(list = ls())
+# set working diectory
+setwd('C:/Users/wndy4/Desktop/Project_DEMA')
+
+# 단지별 변수.csv load
+dat = read.csv("이건도/분양면적수정.csv",header=T,stringsAsFactors=F)
+View(dat)
+dat = dat[,-4]
+str(dat)
+
+### 3년간 평균 인구수 ###
+# 인천광역시월별구별인구수(new).csv load
+gu_pop = read.csv("정동호/인천광역시인구수/인천광역시 월별 구별 인구수(new).csv",header=T,stringsAsFactors=F)
+View(gu_pop)
+
+# 필요없는 행, 열 제거
+# 구이름 열 제거 
+gu_pop = gu_pop[,-1]
+# 합계 행 제거
+a = which(gu_pop$행정구역 == "합계")
+gu_pop = gu_pop[-a,]
+
+# 3년간 평균 구하기
+dim(gu_pop)
+dong_mean = ceiling(apply(gu_pop[,-1],1,mean))
+
+# 행정구역별 3년간 평균값 남겨놓기
+gu_pop = cbind(gu_pop,dong_mean)
+dim(gu_pop)
+gu_pop = gu_pop[,c(1,38)]
+dim(gu_pop)
+
+## 해당 행정구역에 맞는 값을 넣어서 3년 평균 인구수 변수로 새로운 열 추가
+dim(dat)
+# 해당 행정구역에 맞는 인구수 넣기
+for(i in 1:nrow(gu_pop)){
+  for(j in 1:nrow(dat)){
+    if(dat[j,2]==gu_pop$행정구역[i]){
+      dat[j,16] = gu_pop$dong_mean[i]
+    }else
+      next
+  }
+}
+which(is.na(dat$V16))
+dim(dat)
+# 새로운 컬럼명 지정
+colnames(dat)[16] ="3년 평균 인구수"
+
+### 3년간 평균 세대수 ###
+# 인천광역시월별구별세대수(new).csv load
+gu_sede = read.csv("정동호/인천광역시세대수/인천광역시 월별 구별 세대수(new).csv",header=T,stringsAsFactors=F)
+View(gu_sede)
+
+# 필요없는 행, 열 제거
+# 구이름 열 제거 
+gu_sede = gu_sede[,-1]
+# 합계 행 제거
+b = which(gu_sede$행정구역 == "합계")
+gu_sede = gu_sede[-b,]
+
+# 3년간 평균 구하기
+dim(gu_sede)
+dong_sedemean = ceiling(apply(gu_sede[,-1],1,mean))
+
+# 행정구역별 3년간 평균값 남겨놓기
+gu_sede = cbind(gu_sede,dong_sedemean)
+dim(gu_sede)
+gu_sede = gu_sede[,c(1,38)]
+dim(gu_sede)
+## 해당 행정구역에 맞는 값을 넣어서 3년 평균 세대수 변수로 새로운 열 추가
+dim(dat)
+# 해당 행정구역에 맞는 세대수 넣기
+for(i in 1:nrow(gu_sede)){
+  for(j in 1:nrow(dat)){
+    if(dat[j,2]==gu_sede$행정구역[i]){
+      dat[j,17] = gu_sede$dong_sedemean[i]
+    }else
+      next
+  }
+}
+which(is.na(dat$V17))
+dim(dat)
+# 새로운 컬럼명 지정
+colnames(dat)[17] ="3년 평균 세대수"
+
+# 결측값 확인
+which(is.na(dat$`3년 평균 인구수`))
+which(is.na(dat$`3년 평균 세대수`))
+
+### 동별 초중고 합 ###
+# .csv load
+gu_school = read.csv("정동호/인천초중고/인천광역시동별초중고현황.csv",header=T,stringsAsFactors=F)
+View(gu_school)
+
+# 필요없는 행, 열 제거
+gu_school = gu_school[,-c(1,3,4,5)]
+
+# 해당 행정구역에 맞는 초중고 합넣기
+for(i in 1:nrow(gu_school)){
+  for(j in 1:nrow(dat)){
+    if(dat[j,2]==gu_school$동이름[i]){
+      dat[j,18] = gu_school$합계[i]
+    }else
+      next
+  }
+}
+which(is.na(dat$V18))
+dim(dat)
+# 새로운 컬럼명 지정
+colnames(dat)[18] ="초중고현황"
+
+str(dat)
+## 파일 내보내기
+write.csv(dat,file='./정동호/단지별변수(수정).csv')

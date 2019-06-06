@@ -1,0 +1,85 @@
+# 1차 전처리는 파이썬을 통해서 16년 1월 ~ 18년 12월까지 데이터를
+# 구별로 모아서 파일 형성
+# 2차는 R로 추가적인 전처리 과정 및 결측값 처리 진행
+getwd()
+setwd("C:/Users/wndy4/Desktop/데이터마이닝 팀플/변수/월별인천인구수")
+# 중구 csv 파일 불러오기
+junggu = read.csv("./인천광역시 중구 세대수.csv",header=T,stringsAsFactors = F)
+View(junggu)
+# 컬럼명 수정
+colnames(junggu) = gsub("X","",colnames(junggu))
+colnames(junggu)[1] = "행정구역"
+colnames(junggu)
+# 행정구역 행 수정
+junggu$행정구역 = gsub(" ","",junggu$행정구역)
+junggu$행정구역
+# 데이터 타입 확인
+class(junggu) # 데이터프레임
+# 행정기관 행 삭제
+junggu = junggu[-which(junggu[,1] == "행정기관"),]
+# 행 간 결합
+# 영종출장중지소 -> 영종1동 이동
+junggu[8,2:9] = junggu[10,2:9]
+# 영종 출장중지소 행 삭제
+junggu = junggu[-10,]
+str(junggu)
+# character -> numeric 형으로 변환
+for (i in 1:36) {
+  junggu[,i+1] = as.numeric(junggu[,i+1])
+}
+str(junggu)
+# 용유무의출장지소 -> 용유동하고 합해서 결합
+junggu[10,2:9] = junggu[10,2:9] + junggu[11,2:9]
+junggu = junggu[-11,]
+View(junggu)
+######### 결측값 처리 ##########
+# 17.07,08,09 합계 값 넣기
+junggu[13,which(junggu[13,]==0)] = c(53385,53601,53904)
+aa = c(53385,53601,53904)
+
+# 영종1동 결측값 처리
+# 16년 9월부터 17년 12월까지 16개월간 영종동합산이였다가
+# 영종1동으로 분사된 것으로 보이고
+# 16년 8월의 영종1동 : 영종동 비율을 구해서
+# 나누는 방식으로 결측값 처리 진행
+a = 8394;b = 5509
+k = a/(a+b) # 비율 변수
+k
+# 영종 1동은 올림, 영종동은 내림
+ceiling(34858*k) + floor(34858*(1-k))
+which(is.na(junggu[8,])) # na 위치 파악
+for(i in 10:25){
+  junggu[8,i] = ceiling(k*junggu[9,i])
+  junggu[9,i] = floor((1-k)*junggu[9,i])
+}
+
+# 17년 7월 ~ 9월 결측값 처리
+# 합계에서 동별로 비율을 구해서 유추
+# 17년 10월 & 17년 6월 기준으로 비율 구하기
+Ratio = c()
+for(i in 1:12){
+  Ratio[i] = (junggu$`2017.10`[i]+junggu$`2017.6`[i])/(junggu$`2017.10`[13]+junggu$`2017.6`[13])
+}
+Ratio
+junggu$`2017.7`[1:12] = c(ceiling(aa[1]*Ratio[1:6]),floor(aa[1]*Ratio[7:12]))
+junggu$`2017.8`[1:12] = c(ceiling(aa[2]*Ratio[1:6]),floor(aa[2]*Ratio[7:12]))
+junggu$`2017.9`[1:12] = c(ceiling(aa[3]*Ratio[1:6]),floor(aa[3]*Ratio[7:12]))
+
+# 결측값 넣은 것이 총합과 맞는 지 비교
+for(i in 2:36){
+  print(i)
+  print(sum(junggu[1:12,i]) == junggu[13,i])
+}
+# false -> 21, 22
+# 합계 안맞는 것은 조정
+junggu[,20]
+sum(junggu[1:12,20])
+junggu[1,20] =junggu[1,20]+1
+
+junggu[,22]
+sum(junggu[1:12,22])
+junggu[1,22] =junggu[1,22]+2
+####### 결측값 처리 끝 ########
+# csv파일로 저장
+write.csv(junggu,file = "./인천광역시 세대수/인천광역시중구세대수.csv")
+?write.csv
