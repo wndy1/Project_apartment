@@ -1,4 +1,5 @@
-setwd("C:\\Users\\user\\Desktop\\Project_apartment")
+setwd("C:\\Users\\user\\Desktop\\Project_DEMA\\Project_apartment")
+
 train<-read.csv("train set.csv", header=T)
       test<-read.csv("test set.csv",header=T)
       

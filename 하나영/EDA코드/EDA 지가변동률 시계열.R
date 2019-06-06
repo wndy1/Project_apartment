@@ -2,11 +2,11 @@
 ## 시계열 자료
 rm(list=ls())
 ## set working directory
-setwd('C:\\Users\\user\\Desktop\\Project_apartment\\하나영\\지가변동률')
+setwd('C:\\Users\\user\\Desktop\\Project_DEMA\\Project_apartment\\하나영\\지가변동률')
 
 ## Load csv file
 dat = read.csv('지가변동률데이터.csv',header=T,stringsAsFactors=F)
-View(dat)
+#View(dat)
 
 ## 기초정보
 dim(dat)
@@ -34,8 +34,8 @@ par(mfrow=c(2,5))
 for(i in 1:length(gu_name)){
   dates = seq(as.Date("2016-01-01"), by = "month", along = ts_gu_mat[,i]) # 날짜 201601~201812 생    
   tsp = attributes(ts_gu_mat[,i])$tsp
-  plot(ts_gu_mat[,i],xaxt = "n",main = paste(gu_name[i],' 인구수 변화',sep=''),
-       ylab = paste(gu_name[i],' 인구수',sep=''),xlab = '201601 ~ 201812')
+  plot(ts_gu_mat[,i],xaxt = "n",main = paste(gu_name[i],' 지가변동률 ',sep=''),
+       ylab = paste(gu_name[i],' 지가변동 ',sep=''),xlab = '201601 ~ 201812')
   axis(1, at = seq(tsp[1], tsp[2], along = ts_gu_mat[,i]), labels = format(dates,"%Y%m"))
 }
 ## 구군별 시계열 그래프 개별로 보기
@@ -52,7 +52,7 @@ dates = seq(as.Date("2016-01-01"), by = "month", along = ts_gu_mat[,11]) # 날짜 
 tsp = attributes(ts_gu_mat[,11])$tsp
 windows()
 plot(ts_gu_mat[,11],xaxt = "n",main = paste('인천광역시',' 전체 지가변동률',sep=''),
-     ylab = paste('인천광역시',' 인구수',sep=''),xlab = '201601 ~ 201812')
+     ylab = paste('인천광역시',' 지가변동 ',sep=''),xlab = '201601 ~ 201812')
 axis(1, at = seq(tsp[1], tsp[2], along = ts_gu_mat[,11]), labels = format(dates,"%Y%m"))
 graphics.off()
 
@@ -75,7 +75,7 @@ for (i in 1:length(gu_name)){
     dates = seq(as.Date("2016-01-01"), by = "month", along = a[,j]) # 날짜 201601~201812 생    
     tsp = attributes(a[,j])$tsp
     plot(a[,j],xaxt = "n",main = paste(gu_name[i],' ',dong_name[j],' 지가변동률 ',sep=''),
-         ylab = paste(gu_name[i],' ',dong_name[j],' 인구수',sep=''),xlab = '201601 ~ 201812')
+         ylab = paste(gu_name[i],' ',dong_name[j],' 지가변동ㄹ',sep=''),xlab = '201601 ~ 201812')
     axis(1, at = seq(tsp[1], tsp[2], along = a[,j]), labels = format(dates,"%Y%m"))
   } 
 }
