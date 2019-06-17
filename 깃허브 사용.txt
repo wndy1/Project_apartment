@@ -1,0 +1,29 @@
+# 팀장이 처음 한번만 하는 작업
+C:\Users\student\git_test> mkdir git1
+C:\Users\student\git_test> cd git1
+C:\Users\student\git_test\git1> git init
+echo "# gittest1" >> README.md
+git add README.md
+git config --global user.email "sungback10@gmail.com"
+git config --global user.name "sungback"
+git commit -m "first commit"
+git remote add origin https://github.com/sungback/gittest1.git
+git push -u origin master
+
+# 팀원 A
+C:\Users\student> cd git_test
+C:\Users\student\git_test>
+git clone https://github.com/sungback/gittest1.git
+cd gittest1
+C:\Users\student\git_test\gittest1>
+echo "add abc.txt" >> abc.txt
+git add abc.txt
+git commit -m "add abc.txt"
+git push
+
+# 팀장과 팀원A 두번째부터 해야하는 작업
+git pull
+echo "add def.txt" >> def.txt
+git add def.txt
+git commit -m "add def.txt"
+git push
