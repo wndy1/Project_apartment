@@ -5,4 +5,4 @@
 ## 3. Modeling : Decisiont Tree 적용
 ## 4. Modeling : Regresson 적용
 
-## 결과는 모두 최종보고서에 정리되어 있습니다.
+## 위의 내용 모두 최종보고서에 정리되어 있습니다.
